@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import Select from 'react-select';
+import download from 'downloadjs';
 import Api from './api'
 import { mapAuthorsToSelect, mapSongsToSelect, mapVariantsToSelect } from './lib'
 import './App.css'
@@ -136,6 +137,11 @@ class App extends Component {
     })
   }
 
+  downloadSongPdf = () => {
+    api.getSongPdf(this.state.selectedSong.id, this.state.selectedSongVariant.id)
+      .then(pdf => download(pdf, 'song', 'application/pdf'))
+  }
+
   render() {
     console.log(this.state)
     return (
@@ -174,6 +180,10 @@ class App extends Component {
           <div>Autoři písně</div>
           <Select multi options={this.state.allAuthors} value={this.state.songAuthors} onChange={this.onSongAuthorsChange} />
           <button onClick={this.updateSongAuthors}>Aktualizovat autory písně</button>
+
+          <div>Stáhnout píseň v pdf</div>
+          <button onClick={this.downloadSongPdf}>Stáhnout</button>
+
         </div>
 
         <div className="editor">

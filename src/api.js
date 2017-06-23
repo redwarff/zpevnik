@@ -6,7 +6,7 @@ export default class Api {
 
   apiUrl = 'https://zpevnik.herokuapp.com/api/v1'
 
-  fetch = (endpoint, options) => (
+  fetchJson = (endpoint, options) => (
     fetch(`${this.apiUrl}/${endpoint}`, { headers: myHeaders, mode: 'cors', cache: 'default', credentials: 'include', ...options })
       .then(response => {
         if(response.ok) {
@@ -17,57 +17,74 @@ export default class Api {
       })
   )
 
+  fetchBlob = (endpoint, options, blob) => (
+    fetch(`${this.apiUrl}/${endpoint}`, { headers: { 'Accept': 'application/pdf' } })
+      .then(response => {
+        if(response.ok) {
+          return response.blob()
+        }
+        throw new Error('Network response was not ok.')
+      })
+  )
+
   getAuthors = () => {
-    return this.fetch('authors')
+    return this.fetchJson('authors')
       .catch(error => {
         console.log('There has been a problem with your fetch operation: ' + error.message)
       })
   }
 
   getSongs = () => {
-    return this.fetch('songs')
+    return this.fetchJson('songs')
       .catch(error => {
         console.log('There has been a problem with your fetch operation: ' + error.message)
       })
   }
 
   getSong = songId => {
-    return this.fetch(`songs/${songId}`)
+    return this.fetchJson(`songs/${songId}`)
+      .catch(error => {
+        console.log('There has been a problem with your fetch operation: ' + error.message)
+      })
+  }
+
+  getSongPdf = (songId, variantId) => {
+    return this.fetchBlob(`songs/${songId}/variants/${variantId}`)
       .catch(error => {
         console.log('There has been a problem with your fetch operation: ' + error.message)
       })
   }
 
   getSongVariants = songId => {
-    return this.fetch(`songs/${songId}/variants`)
+    return this.fetchJson(`songs/${songId}/variants`)
       .catch(error => {
         console.log('There has been a problem with your fetch operation: ' + error.message)
       })
   }
 
   getSongAuthors = songId => {
-    return this.fetch(`songs/${songId}/authors`)
+    return this.fetchJson(`songs/${songId}/authors`)
       .catch(error => {
         console.log('There has been a problem with your fetch operation: ' + error.message)
       })
   }
 
   createAuthor = (firstname, surname) => {
-    return this.fetch('authors', { method: 'POST', body: JSON.stringify({ firstname, surname }) })
+    return this.fetchJson('authors', { method: 'POST', body: JSON.stringify({ firstname, surname }) })
       .catch(error => {
         console.log('There has been a problem with your fetch operation: ' + error.message)
       })
   }
 
   createSong = title => {
-    return this.fetch('songs', { method: 'POST', body: JSON.stringify({ title }) })
+    return this.fetchJson('songs', { method: 'POST', body: JSON.stringify({ title }) })
       .catch(error => {
         console.log('There has been a problem with your fetch operation: ' + error.message)
       })
   }
 
   createVariant = (title, songId) => {
-    return this.fetch(`songs/${songId}/variants`, { method: 'POST', body: JSON.stringify({ title, text: 'Sem přidej píseň v ChordPro formátu...' }) })
+    return this.fetchJson(`songs/${songId}/variants`, { method: 'POST', body: JSON.stringify({ title, text: 'Sem přidej píseň v ChordPro formátu...' }) })
       .then(data => console.log(data))
       .catch(error => {
         console.log('There has been a problem with your fetch operation: ' + error.message)
@@ -75,7 +92,7 @@ export default class Api {
   }
 
   updateSongAuthor = (songId, authorId) => {
-    return this.fetch(`songs/${songId}/authors/${authorId}`, { method: 'POST' })
+    return this.fetchJson(`songs/${songId}/authors/${authorId}`, { method: 'POST' })
       .then(data => console.log(data))
       .catch(error => {
         console.log('There has been a problem with your fetch operation: ' + error.message)
@@ -84,7 +101,7 @@ export default class Api {
 
   updateSong = (songId, variantId, text, variantTitle) => {
     console.log('sendind text: ', text)
-    return this.fetch(`songs/${songId}/variants/${variantId}`, { method: 'PUT', body: JSON.stringify({ text, chords: text, title: variantTitle }) })
+    return this.fetchJson(`songs/${songId}/variants/${variantId}`, { method: 'PUT', body: JSON.stringify({ text, chords: text, title: variantTitle }) })
       .then(data => console.log(data))
       .catch(error => {
         console.log('There has been a problem with your fetch operation: ' + error.message)
