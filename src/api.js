@@ -82,9 +82,18 @@ export default class Api {
       })
   }
 
-  updateSong = (songId, variantId, text, variantTitle) => {
+  updateSong = (songId, variantId, text, songTitle, musicAuthors, lyricsAuthors, interpreters) => {
+    const body = {
+      'title': songTitle,
+      'text': text,
+      'authors': {
+        'music': musicAuthors,
+        'lyrics': lyricsAuthors
+      },
+      'interpreters': interpreters
+    }
     console.log('sendind text: ', text)
-    return this.fetch(`songs/${songId}/variants/${variantId}`, { method: 'PUT', body: JSON.stringify({ text, chords: text, title: variantTitle }) })
+    return this.fetch(`songs/${songId}/variants/${variantId}`, { method: 'PUT', body: JSON.stringify({ text, chords: text, title: songTitle }) })
       .then(data => console.log(data))
       .catch(error => {
         console.log('There has been a problem with your fetch operation: ' + error.message)

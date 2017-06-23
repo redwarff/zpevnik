@@ -16,10 +16,11 @@ class App extends Component {
     addAuthorName: '',
     addAuthorSurname: '',
     allSongs: [],
-    selectedSong: {},
+    selectedSong: { authors: {} },
     selectedSongVariant: {},
     selectedSongVariants: [],
-    newSongVariantTitle: ''
+    newSongVariantTitle: '',
+    interpret: ''
   }
 
   componentDidMount = () => {
@@ -29,7 +30,7 @@ class App extends Component {
 
   onSongChordsChange = e => {
     this.setState({
-      selectedSongVariant: {...this.state.selectedSongVariant, chords: e.target.value}
+      selectedSongVariant: {...this.state.selectedSong, text: e.target.value}
     })
   }
 
@@ -39,9 +40,21 @@ class App extends Component {
     })
   }
 
-  onSongAuthorsChange = value => {
+  onInterpreterChange = value => {
     this.setState({
-      songAuthors: value
+      selectedSong: {...this.state.selectedSong, interpreters: value.map(it => it.value) }
+    })
+  }
+
+  onMusicAuthorChange = value => {
+    this.setState({
+      selectedSong: {...this.state.selectedSong, authors: { ...this.state.selectedSong.authors, music: value.map(it => it.value) } }
+    })
+  }
+
+  onLyricsAuthorChange = value => {
+    this.setState({
+      selectedSong: {...this.state.selectedSong, authors: { ...this.state.selectedSong.authors, lyrics: value.map(it => it.value) } }
     })
   }
 
@@ -57,14 +70,16 @@ class App extends Component {
     })
   }
 
-  createAuthor = () => {
+  createAuthor = e => {
+    e.preventDefault();
     api.createAuthor(this.state.addAuthorName, this.state.addAuthorSurname)
       .then(data => {
         this.getAllAuthors()
       })
   }
 
-  createSong = () => {
+  createSong = e => {
+    e.preventDefault();
     api.createSong(this.state.addSongTitle)
       .then(data => {
         this.getAllSongs()
@@ -126,8 +141,9 @@ class App extends Component {
       })
   }
 
-  saveSong = () => {
-    api.updateSong(this.state.selectedSong.id, this.state.selectedSongVariant.id, this.state.selectedSongVariant.chords, this.state.selectedSongVariant.title)
+  saveSong = e => {
+    e.preventDefault();
+    api.updateSong(this.state.selectedSong.id, this.state.selectedSongVariant.id, this.state.selectedSong.text, this.state.selectedSong.title)
   }
 
   updateSongAuthors = () => {
@@ -139,7 +155,130 @@ class App extends Component {
   render() {
     console.log(this.state)
     return (
-      <div className="app">
+      <div className="container">
+        <div id="content">
+          <div className="row-fluid" style={{ marginTop: '10px' }}>
+            username
+            <a href="{{ logout_link }}">Logout</a>
+          </div>
+          <div className="row">
+            <div className="col-md-4 col-sm-12">
+              <h4>Vytvořit autora</h4>
+              <form>
+                <div className="form-group">
+                  <label for="name">Jméno:</label>
+                  <input type="text" className="form-control" id="name" value={this.state.addAuthorName} onChange={this.onAddAuthorNameChange} />
+                </div>
+                <div className="form-group">
+                  <label for="surname">Příjmení (optional):</label>
+                  <input type="text" className="form-control" id="surname" value={this.state.addAuthorSurname} onChange={this.onAddAuthorSurnameChange} />
+                </div>
+                <button type="submit" className="btn btn-default" onClick={this.createAuthor}>Vytvořit autora</button>
+              </form>
+
+              <hr />
+
+              <h4>Vytvořit píseň</h4>
+              <form>
+                <div className="form-group">
+                  <label for="name">Jméno:</label>
+                  <input type="text" className="form-control" id="name" value={this.state.addSongTitle} onChange={this.onAddSongTitleChange} />
+                </div>
+                <button className="btn btn-default" onClick={this.createSong}>Vytvořit píseň</button>
+              </form>
+            </div>
+
+            <div className="col-md-4 col-sm-12">
+              <h4>Editace písně</h4>
+              <form>
+                <div className="form-group">
+                  <label for="name">Vybrat píseň:</label>
+                  <Select id="name" options={mapSongsToSelect(this.state.allSongs)} value={this.state.selectedSong.id} onChange={this.onSelectedSongChange} />
+                </div>
+              </form>
+
+              <hr />
+
+              <form>
+                <div className="form-group">
+                  <label for="name">Jméno písně:</label>
+                  <input type="text" className="form-control" id="name" value={this.state.selectedSong.title} />
+                </div>
+
+                <div className="form-group">
+                  <label for="interpreter">Interpret:</label>
+                  <Select className="form-control" id="interpreter" multi options={this.state.allAuthors} value={this.state.selectedSong.interpreters} onChange={this.onInterpretChange} />
+                </div>
+
+                <div className="form-group">
+                  <label for="text">Píseň:</label>
+                  <textarea
+                    value={this.state.selectedSong.text}
+                    onChange={this.onSongChordsChange}
+                    className="form-control"
+                    rows={10}
+                    id="text" />
+                </div>
+                
+                <div className="form-group">
+                  <label for="music">Autor hudby:</label>
+                  <Select className="form-control" id="music" multi options={this.state.allAuthors} value={this.state.selectedSong.authors.music} onChange={this.onMusicAuthorChange} />
+                </div>
+
+                <div className="form-group">
+                  <label for="lyrics">Autor textu:</label>
+                  <Select className="form-control" id="lyrics" multi options={this.state.allAuthors} value={this.state.selectedSong.authors.lyrics} onChange={this.onLyricsAuthorChange} />
+                </div>
+
+                <button onClick={this.saveSong} className="btn btn-default">Editovat píseň</button>
+              </form>
+            </div>
+            <div className="col-md-4 col-sm-12">
+              <h4>Editor návod</h4>
+              <p>Editor zatím nepodporuje vše - umí ale přidávat autory a editovat písně. V levo se přidávají jakýkoliv lidé - ať je to autor hudby, autor textu, nebo interpret. V případě, že se jedná například o název kapely, vyplň pouze jméno a příjmení nech prázdné</p>
+              <p>Píseň je nejprve třeba vytvořit (vytvoř píseň) a poté se dá vybrat v editoru a editovat. Měnit se může jméno, interpret a hlavně text a akordy samotné. Důležití jsou pro nás i autoři hudby a autoři textu, takže pokud je znáš, určitě nám pomohou.</p>
+              <p></p>
+              <hr />
+              <p>
+                Editor využívá značky pro tvorbu písniček. 
+                <ul>
+                  <li>[C] - akord</li>
+                  <li>## - začátek sloky</li>
+                  <li>** - začátek refrénu</li>
+                  <li>*** - opakování refrénu</li>
+                  <li>| - začátek repetice</li>
+                  <li>|| - konec repetice</li>
+                  <li>||{5} - konec repetice s daným množstvím opakování</li>
+                  <li>&gt; - začátek mluveného slova</li>
+                  <li>&lt; - konec mluveného slova</li>
+                </ul>
+              </p>
+              <hr />
+              <h4>Příklad písně</h4>
+              <p>
+                <b>##</b><br />
+                <b>[Dmi]</b>Dávám sbohem <b>[C]</b>břehům prokla<b>[Ami]</b>tejm,<br />
+                který <b>[Dmi]</b> v drápech má <b>[C]</b>ďábel <b>[Dmi]</b>sám.<br />
+
+                <b>**</b><br />
+                Jen tři <b>[F]</b>kříže z bí<b>[C]</b>lýho kame<b>[Ami]</b>ní<br />
+                někdo <b>[Dmi]</b>do písku <b>[C]</b>posklá<b>[Dmi]</b>dal.<br />
+
+                <b>##</b><br />
+                První kříž má pod sebou jen hřích, samý pití a rvačka jen.<br />
+
+                <b>***</b><br />
+
+                <b>></b>Vím, trestat je lidský, ale odpouštět božský.<b></b><br />
+
+                <b>|</b> Opakující se refrén..... <b>||{2}</b>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+      {/*<div className="app">
 
         <div className="creator">
           <div>Vytvořit píseň</div>
@@ -203,8 +342,7 @@ class App extends Component {
             Save song chords
           </button>
         </div>
-      </div>
-    );
+      </div>*/}
   }
 }
 
