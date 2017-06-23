@@ -174,6 +174,20 @@ class App extends Component {
           <div>Autoři písně</div>
           <Select multi options={this.state.allAuthors} value={this.state.songAuthors} onChange={this.onSongAuthorsChange} />
           <button onClick={this.updateSongAuthors}>Aktualizovat autory písně</button>
+
+          <div>Značení používané v textu písně:</div>
+          <ul>
+            <li>zacatek sloky: #####</li>
+            <li>zacatek refrenu: *****</li>
+            <li>opakovani refrenu (R:): ******</li>
+            <li>Sloky i refreny se automaticky ukoncuji prichodem dasli sloky/refrenu (nebo opakovanim)</li>
+            <li>zacatek mluveneho textu: &gt;</li>
+            <li>konec mluveneho textu: &lt;</li>
+            <li>akordy: [X] , napr. <code>[G]Skákal pes [C]přes oves</code></li>
+            <li>repetice zacatek: |</li>
+            <li>repetice konec: ||</li>
+            <li>repetice konec s poctem opakovani: ||{2}</li>
+          </ul>
         </div>
 
         <div className="editor">
